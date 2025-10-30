@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Service Jobs - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📋 Service Jobs & Quotations</h3>
+        <a href="{{ url_for('main.add_job') }}" class="btn btn-success">
+            ➕ New Job
+        </a>
+    </div>
+
+    <!-- Filter Controls -->
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <strong>Filter by Status:</strong>
+            <a href="{{ url_for('main.jobs') }}" class="btn btn-sm {{ 'btn-primary' if current_filter == 'all' else 'btn-outline' }}">
+                All ({{ total_jobs }})
+            </a>
+            <a href="{{ url_for('main.jobs', status='in_progress') }}" class="btn btn-sm {{ 'btn-warning' if current_filter == 'in_progress' else 'btn-outline' }}">
+                In Progress ({{ active_jobs_count }})
+            </a>
+            <a href="{{ url_for('main.jobs', status='completed') }}" class="btn btn-sm {{ 'btn-success' if current_filter == 'completed' else 'btn-outline' }}">
+                Completed ({{ completed_jobs_count }})
+            </a>
+        </div>
+    </div>
+
+    {% if jobs %}
+    <div class="table">
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Vehicle</th>
+                    <th>Owner</th>
+                    <th>Date In</th>
+                    <th>Mileage</th>
+                    <th>Services</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td>
+                        <strong>#{{ job.id }}</strong>
+                    </td>
+                    <td>
+                        <strong>{{ job.car.license_plate }}</strong>
+                        <br><small class="text-muted">{{ job.car.make }} {{ job.car.model }}</small>
+                    </td>
+                    <td>
+                        {{ job.car.owner.name }}
+                        <br><small class="text-muted">{{ job.car.owner.phone }}</small>
+                    </td>
+                    <td>
+                        {{ job.date_in.strftime('%d %b %Y') }}
+                        {% if job.date_out %}
+                        <br><small class="text-muted">Out: {{ job.date_out.strftime('%d %b') }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ "{:,}".format(job.mileage_in) }} km
+                        {% if job.mileage_out %}
+                        <br><small class="text-muted">Out: {{ "{:,}".format(job.mileage_out) }} km</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if job.service_items|length > 0 %}badge-info{% else %}badge-warning{% endif %}">
+                            {{ job.service_items|length }} services
+                        </span>
+                    </td>
+                    <td>
+                        {% if job.status == 'in_progress' %}
+                        <span class="status-indicator status-in-progress">🟡 In Progress</span>
+                        {% elif job.status == 'completed' %}
+                        <span class="status-indicator status-completed">🟢 Completed</span>
+                        {% else %}
+                        <span class="status-indicator status-quoted">🔵 Quoted</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>R {{ "{:,.2f}".format(job.total_cost) }}</strong>
+                        {% if job.quoted_cost != job.total_cost %}
+                        <br><small class="text-muted">Quoted: R {{ "{:,.2f}".format(job.quoted_cost) }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                            <a href="{{ url_for('main.job_detail', job_id=job.id) }}" class="btn btn-sm btn-primary" title="View Details">
+                                👁️
+                            </a>
+                            {% if job.status != 'completed' %}
+                            <a href="{{ url_for('main.generate_quotation', job_id=job.id) }}" class="btn btn-sm btn-warning" title="Download Quote">
+                                📄
+                            </a>
+                            {% if job.car.owner.email %}
+                            <form method="POST" action="{{ url_for('main.send_quotation_email_route', job_id=job.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-info" title="Email Quote">
+                                    📧
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% else %}
+                            <a href="{{ url_for('main.generate_invoice', job_id=job.id) }}" class="btn btn-sm btn-success" title="Download Invoice">
+                                🧾
+                            </a>
+                            {% if job.car.owner.email %}
+                            <form method="POST" action="{{ url_for('main.send_invoice_email_route', job_id=job.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-info" title="Email Invoice">
+                                    📧
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🔧</div>
+        <h3 style="color: var(--gray); margin-bottom: 1rem;">No Service Jobs Yet</h3>
+        <p style="color: var(--gray); margin-bottom: 2rem;">
+            {% if current_filter != 'all' %}
+            No {{ current_filter|replace('_', ' ') }} jobs found.
+            {% else %}
+            Create your first service job to get started with garage operations.
+            {% endif %}
+        </p>
+        <a href="{{ url_for('main.add_job') }}" class="btn btn-success btn-lg">
+            ➕ Create First Job
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Job Statistics -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📊 Job Statistics</h3>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1.5rem;">
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--warning);">{{ active_jobs_count }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">In Progress</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--success);">{{ completed_jobs_count }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Completed</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--info);">{{ total_jobs }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total Jobs</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary);">R {{ "{:,.2f}".format(total_revenue) }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total Revenue</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

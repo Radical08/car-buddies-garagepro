@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+    <meta charset="UTF-8">
+    <title>Service History Report - THE CAR BUDDIES</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #17a2b8; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #17a2b8; margin-bottom: 10px; }
+        .report-title { font-size: 20px; font-weight: bold; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: bold; }
+        .status-completed { color: #28a745; }
+        .status-in-progress { color: #ffc107; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚗 THE CAR BUDDIES</div>
+        <div>661 Baobab Road | 0789292789 / 0772576803</div>
+        <h1>Complete Service History Report</h1>
+        <div>Generated on: {{ now.strftime('%d %B %Y at %H:%M') }}</div>
+    </div>
+
+    <div class="report-title">All Service Jobs - Complete History</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Job ID</th>
+                <th>Vehicle</th>
+                <th>Owner</th>
+                <th>Date In</th>
+                <th>Date Out</th>
+                <th>Status</th>
+                <th>Services</th>
+                <th>Total Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>#{{ job.id }}</td>
+                <td>{{ job.car.license_plate }} - {{ job.car.make }} {{ job.car.model }}</td>
+                <td>{{ job.car.owner.name }}</td>
+                <td>{{ job.date_in.strftime('%d %b %Y') }}</td>
+                <td>{{ job.date_out.strftime('%d %b %Y') if job.date_out else 'N/A' }}</td>
+                <td class="status-{{ job.status }}">
+                    {{ job.status|replace('_', ' ')|title }}
+                </td>
+                <td>{{ job.service_items|length }}</td>
+                <td>R {{ "{:,.2f}".format(job.total_cost) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" style="text-align: right; font-weight: bold;">Totals:</td>
+                <td style="font-weight: bold;">{{ total_services }} services</td>
+                <td style="font-weight: bold;">R {{ "{:,.2f}".format(total_revenue) }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+   <!-- In the summary section, update the variables -->
+<div style="margin-top: 30px;">
+    <strong>Report Summary:</strong>
+    <ul>
+        <li>Total Jobs: {{ jobs|length }}</li>
+        <li>Completed Jobs: {{ completed_jobs }}</li>
+        <li>In Progress: {{ in_progress_jobs }}</li>
+        <li>Total Revenue: R {{ "{:,.2f}".format(total_revenue) }}</li>
+        <li>Average Job Value: R {{ "{:,.2f}".format(average_job_value) }}</li>
+    </ul>
+</div>
+
+    <div class="footer">
+        <strong>THE CAR BUDDIES GaragePro</strong><br>
+        Professional Garage Management System<br>
+        Report generated automatically
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

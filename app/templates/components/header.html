@@ -1,0 +1,98 @@
+<!-- Page Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="header-title">
+            <h1 style="margin: 0; color: var(--primary);">
+                {% if request.endpoint == 'main.dashboard' %}
+                    🏠 Dashboard
+                {% elif request.endpoint == 'main.car_owners' %}
+                    👤 Car Owners
+                {% elif request.endpoint == 'main.cars' %}
+                    🚗 Cars
+                {% elif request.endpoint == 'main.jobs' %}
+                    📋 Service Jobs
+                {% elif request.endpoint == 'main.payments' %}
+                    💵 Payments
+                {% elif request.endpoint == 'main.search' %}
+                    🔍 Search & Reports
+                {% elif request.endpoint == 'main.profile' %}
+                    ⚙️ Profile & Settings
+                {% elif request.endpoint == 'main.settings' %}
+                    ⚙️ Settings
+                {% elif request.endpoint == 'main.backup' %}
+                    💾 Backup & Restore
+                {% else %}
+                    🚗 GaragePro
+                {% endif %}
+            </h1>
+            <small class="text-muted">
+                {% if request.endpoint == 'main.dashboard' %}
+                    Overview of your garage operations
+                {% elif request.endpoint == 'main.car_owners' %}
+                    Manage customer accounts and balances
+                {% elif request.endpoint == 'main.cars' %}
+                    Vehicle inventory and details
+                {% elif request.endpoint == 'main.jobs' %}
+                    Active and completed service jobs
+                {% elif request.endpoint == 'main.payments' %}
+                    Payment records and transactions
+                {% elif request.endpoint == 'main.search' %}
+                    Find cars, owners, and transactions
+                {% elif request.endpoint == 'main.profile' %}
+                    Manage your account settings
+                {% else %}
+                    Professional Garage Management
+                {% endif %}
+            </small>
+        </div>
+        
+        <div class="quick-actions">
+            {% if request.endpoint != 'main.dashboard' %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                🏠 Dashboard
+            </a>
+            {% endif %}
+            
+            <a href="{{ url_for('main.add_job') }}" class="btn btn-success">
+                ➕ New Job
+            </a>
+            
+            <a href="{{ url_for('main.add_car_owner') }}" class="btn btn-warning">
+                👤 New Owner
+            </a>
+            
+            <button id="install-button" class="btn btn-info" style="display: none;">
+                📱 Install App
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Quick Stats Bar -->
+{% if request.endpoint == 'main.dashboard' %}
+<div class="quick-stats">
+    <div class="quick-stat">
+        <div class="icon">🚗</div>
+        <div class="value" id="total-cars">{{ total_cars }}</div>
+        <div class="label">Total Cars</div>
+    </div>
+    
+    <div class="quick-stat">
+        <div class="icon">🔧</div>
+        <div class="value" id="active-jobs">{{ active_jobs }}</div>
+        <div class="label">Active Jobs</div>
+    </div>
+    
+    <div class="quick-stat">
+        <div class="icon">💰</div>
+        <div class="value" id="total-revenue">R {{ "{:,.2f}".format(total_revenue) }}</div>
+        <div class="label">Total Revenue</div>
+    </div>
+    
+    <div class="quick-stat">
+        <div class="icon">📊</div>
+        <div class="value" id="total-outstanding">R {{ "{:,.2f}".format(total_outstanding) }}</div>
+        <div class="label">Outstanding</div>
+    </div>
+</div>
+{% endif %}

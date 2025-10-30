@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Car Buddies GaragePro{% endblock %}
+
+{% block auth_content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-logo">
+            <h1>🚗 CAR BUDDIES</h1>
+            <p style="color: var(--gray); margin-top: 0.5rem; font-size: 1rem;">GaragePro Management</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.login') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                <label class="form-label">👤 Username</label>
+                {{ form.username(class="form-control", placeholder="Enter your username") }}
+                {% for error in form.username.errors %}
+                <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🔒 Password</label>
+                {{ form.password(class="form-control", placeholder="Enter your password") }}
+                {% for error in form.password.errors %}
+                <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                🚀 Login to GaragePro
+            </button>
+        </form>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="text-align: center; color: var(--gray); font-size: 0.9rem;">
+                <strong>THE CAR BUDDIES</strong><br>
+                <div style="margin-top: 0.5rem;">
+                    661 Baobab Road<br>
+                    0789292789 / 0772576803<br>
+                    happytayengwa702@gmail.com
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-card h1 {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+</style>
+{% endblock %}

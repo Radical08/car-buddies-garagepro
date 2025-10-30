@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Profile & Settings - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">⚙️ Profile & Settings</h3>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- User Profile Form -->
+        <div style="max-width: 600px; margin: 0 auto;">
+            <h4 style="color: var(--primary); margin-bottom: 1.5rem;">👤 User Profile</h4>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">👤 Username *</label>
+                        {{ form.username(class="form-control") }}
+                        {% for error in form.username.errors %}
+                        <small style="color: var(--danger);">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">✉️ Email *</label>
+                        {{ form.email(class="form-control") }}
+                        {% for error in form.email.errors %}
+                        <small style="color: var(--danger);">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h5 style="color: var(--primary); margin-bottom: 1rem;">🔒 Change Password</h5>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        {{ form.current_password(class="form-control", placeholder="Enter current password to change") }}
+                        {% for error in form.current_password.errors %}
+                        <small style="color: var(--danger);">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            {{ form.new_password(class="form-control", placeholder="Minimum 6 characters") }}
+                            {% for error in form.new_password.errors %}
+                            <small style="color: var(--danger);">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                            {% for error in form.confirm_password.errors %}
+                            <small style="color: var(--danger);">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-success">
+                        💾 Save Changes
+                    </button>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-warning">
+                        ❌ Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Account Information -->
+        <div style="max-width: 600px; margin: 2rem auto 0;">
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">📊 Account Information</h4>
+            <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <strong>Member Since:</strong>
+                        <div>{{ current_user.created_at.strftime('%d %B %Y') }}</div>
+                    </div>
+                    <div>
+                        <strong>Last Login:</strong>
+                        <div>Today</div>
+                    </div>
+                    <div>
+                        <strong>Account Status:</strong>
+                        <div><span class="badge badge-success">Active</span></div>
+                    </div>
+                    <div>
+                        <strong>User Role:</strong>
+                        <div>Garage Owner/Operator</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🔗 Quick Links</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <a href="{{ url_for('main.backup') }}" class="btn btn-info" style="display: flex; flex-direction: column; align-items: center; padding: 1rem;">
+                <div style="font-size: 2rem;">💾</div>
+                <div>Backup & Restore</div>
+            </a>
+            
+            <a href="{{ url_for('main.settings') }}" class="btn btn-warning" style="display: flex; flex-direction: column; align-items: center; padding: 1rem;">
+                <div style="font-size: 2rem;">⚙️</div>
+                <div>System Settings</div>
+            </a>
+            
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary" style="display: flex; flex-direction: column; align-items: center; padding: 1rem;">
+                <div style="font-size: 2rem;">🏠</div>
+                <div>Dashboard</div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

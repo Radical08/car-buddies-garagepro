@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">⚙️ System Settings</h3>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- Garage Settings -->
+        <div style="margin-bottom: 3rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1.5rem;">🏢 Garage Settings</h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Garage Name</label>
+                        <input type="text" class="form-control" value="THE CAR BUDDIES" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" value="661 Baobab Road" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Numbers</label>
+                        <input type="text" class="form-control" value="0789292789 / 0772576803" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="happytayengwa702@gmail.com" readonly>
+                    </div>
+
+                    <button class="btn btn-warning" onclick="showEditMessage()">
+                        ✏️ Edit Garage Details
+                    </button>
+                </div>
+
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <h5 style="color: var(--primary); margin-bottom: 1rem;">ℹ️ Configuration</h5>
+                    <div style="font-size: 0.9rem; color: var(--gray);">
+                        <p>Garage details are configured in the environment variables for security.</p>
+                        <p style="margin-top: 1rem;"><strong>To modify these settings:</strong></p>
+                        <ol style="margin-left: 1rem; margin-top: 0.5rem;">
+                            <li>Edit the <code>.env</code> file</li>
+                            <li>Update the configuration values</li>
+                            <li>Restart the application</li>
+                        </ol>
+                        <p style="margin-top: 1rem; color: var(--warning);">
+                            ⚠️ Changes require application restart
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Settings -->
+        <div style="margin-bottom: 3rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1.5rem;">📧 Email Settings</h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">SMTP Server</label>
+                        <input type="text" class="form-control" value="smtp.gmail.com" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">SMTP Port</label>
+                        <input type="number" class="form-control" value="587" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Username</label>
+                        <input type="email" class="form-control" value="happytayengwa702@gmail.com" readonly>
+                    </div>
+
+                    <button class="btn btn-info" onclick="testEmail()">
+                        📧 Test Email Configuration
+                    </button>
+                </div>
+
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <h5 style="color: var(--primary); margin-bottom: 1rem;">📨 Email Features</h5>
+                    <div style="font-size: 0.9rem; color: var(--gray);">
+                        <p><strong>✅ Available Features:</strong></p>
+                        <ul style="margin-left: 1rem; margin-top: 0.5rem;">
+                            <li>Automated quotation emails</li>
+                            <li>Invoice delivery via email</li>
+                            <li>Payment receipts</li>
+                            <li>Account statements</li>
+                        </ul>
+                        <p style="margin-top: 1rem;"><strong>🔒 Security Note:</strong></p>
+                        <p>Uses Gmail SMTP with App Password for secure authentication.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Preferences -->
+        <div>
+            <h4 style="color: var(--primary); margin-bottom: 1.5rem;">🎛️ System Preferences</h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Currency</label>
+                        <input type="text" class="form-control" value="South African Rand (ZAR)" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Date Format</label>
+                        <input type="text" class="form-control" value="DD/MM/YYYY" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Theme</label>
+                        <input type="text" class="form-control" value="Dark Theme" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="auto-backup" checked disabled>
+                            <label class="form-label" style="margin: 0;">Automatic weekly backups</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="email-notifications" checked disabled>
+                            <label class="form-label" style="margin: 0;">Email notifications</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <h5 style="color: var(--primary); margin-bottom: 1rem;">🔧 Advanced Settings</h5>
+                    <div style="font-size: 0.9rem; color: var(--gray);">
+                        <p><strong>Database:</strong> SQLite</p>
+                        <p><strong>Version:</strong> 1.0.0</p>
+                        <p><strong>Framework:</strong> Flask</p>
+                        <p><strong>Environment:</strong> Production</p>
+                        
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-sm btn-outline" onclick="showSystemInfo()">
+                                🖥️ System Information
+                            </button>
+                            <button class="btn btn-sm btn-outline" onclick="showLogs()">
+                                📋 View Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danger Zone -->
+<div class="card" style="border: 1px solid var(--danger);">
+    <div class="card-header" style="border-bottom: 1px solid var(--danger);">
+        <h3 class="card-title" style="color: var(--danger);">🚨 Danger Zone</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: center;">
+            <div>
+                <h5 style="color: var(--danger); margin-bottom: 0.5rem;">Reset All Data</h5>
+                <p style="color: var(--gray); margin-bottom: 0;">
+                    Permanently delete all customers, cars, jobs, and payments. This action cannot be undone.
+                </p>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-danger" onclick="showResetWarning()">
+                    🗑️ Reset Everything
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showEditMessage() {
+        showAlert('Garage details are configured in environment variables. Edit the .env file and restart the application.', 'info');
+    }
+
+    function testEmail() {
+        showAlert('Email test feature would be implemented here', 'info');
+    }
+
+    function showSystemInfo() {
+        showAlert('System information dialog would open here', 'info');
+    }
+
+    function showLogs() {
+        showAlert('Log viewer would open here', 'info');
+    }
+
+    function showResetWarning() {
+        if (confirm('🚨 DANGER: This will DELETE ALL DATA including customers, cars, jobs, and payments!\n\nThis action cannot be undone. Are you sure?')) {
+            const resetCode = prompt('Type "DELETE ALL" to confirm:');
+            if (resetCode === 'DELETE ALL') {
+                showAlert('System reset would be performed here', 'warning');
+            } else {
+                showAlert('Reset cancelled', 'error');
+            }
+        }
+    }
+</script>
+{% endblock %}

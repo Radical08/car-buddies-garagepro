@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Cars - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🚗 Cars Management</h3>
+        <a href="{{ url_for('main.add_car') }}" class="btn btn-success">
+            ➕ Add New Car
+        </a>
+    </div>
+
+    {% if cars %}
+    <div class="table">
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>License Plate</th>
+                    <th>Vehicle Details</th>
+                    <th>Owner</th>
+                    <th>Service History</th>
+                    <th>Last Service</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>
+                        <strong style="font-size: 1.1rem;">{{ car.license_plate }}</strong>
+                    </td>
+                    <td>
+                        <strong>{{ car.make }} {{ car.model }}</strong>
+                        {% if car.year %}
+                        <br><small class="text-muted">{{ car.year }} • {{ car.color }}</small>
+                        {% endif %}
+                        {% if car.vin %}
+                        <br><small class="text-muted">VIN: {{ car.vin }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ car.owner.name }}</strong>
+                        <br><small class="text-muted">{{ car.owner.phone }}</small>
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{ car.service_jobs|length }} jobs</span>
+                    </td>
+                    <td>
+                        {% if car.service_jobs %}
+                        {% set last_job = car.service_jobs|sort(attribute='date_in', reverse=true)|first %}
+                        <small>{{ last_job.date_in.strftime('%d %b %Y') }}</small>
+                        {% else %}
+                        <span class="text-muted">No services</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ url_for('main.add_job') }}?car_id={{ car.id }}" class="btn btn-sm btn-success" title="New Job">
+                                🔧
+                            </a>
+                            <a href="{{ url_for('main.car_detail', car_id=car.id) }}" class="btn btn-sm btn-primary" title="View History">
+                                👁️
+                            </a>
+                            <a href="{{ url_for('main.add_car') }}?edit={{ car.id }}" class="btn btn-sm btn-warning" title="Edit">
+                                ✏️
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🚗</div>
+        <h3 style="color: var(--gray); margin-bottom: 1rem;">No Cars Registered</h3>
+        <p style="color: var(--gray); margin-bottom: 2rem;">Add cars to start managing service jobs and quotations.</p>
+        <a href="{{ url_for('main.add_car') }}" class="btn btn-success btn-lg">
+            ➕ Add First Car
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Stats -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📊 Cars Overview</h3>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1.5rem;">
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--primary);">{{ total_cars }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total Cars</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--info);">{{ cars_with_services }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">With Service History</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--warning);">{{ unique_owners }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Unique Owners</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--success);">{{ active_cars }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Active in Garage</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add search functionality for cars
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = '🔍 Search cars by license plate, make, model, or owner...';
+        searchInput.className = 'form-control';
+        searchInput.style.marginBottom = '1rem';
+        
+        const cardHeader = document.querySelector('.card-header');
+        cardHeader.parentNode.insertBefore(searchInput, cardHeader.nextSibling);
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

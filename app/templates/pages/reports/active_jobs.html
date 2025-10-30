@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+    <meta charset="UTF-8">
+    <title>Active Jobs Report - THE CAR BUDDIES</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #ffc107; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #ffc107; margin-bottom: 10px; }
+        .report-title { font-size: 20px; font-weight: bold; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: bold; }
+        .status-in-progress { color: #ffc107; font-weight: bold; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚗 THE CAR BUDDIES</div>
+        <div>661 Baobab Road | 0789292789 / 0772576803</div>
+        <h1>Active Jobs Report</h1>
+        <div>Generated on: {{ now.strftime('%d %B %Y at %H:%M') }}</div>
+    </div>
+
+    <div class="report-title">Currently In-Progress Service Jobs</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Job ID</th>
+                <th>Vehicle</th>
+                <th>Owner</th>
+                <th>Date In</th>
+                <th>Services</th>
+                <th>Estimated Cost</th>
+                <th>Days in Shop</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>#{{ job.id }}</td>
+                <td>{{ job.car.license_plate }} - {{ job.car.make }} {{ job.car.model }}</td>
+                <td>{{ job.car.owner.name }}</td>
+                <td>{{ job.date_in.strftime('%d %b %Y') }}</td>
+                <td>{{ job.service_items|length }} services</td>
+                <td>R {{ "{:,.2f}".format(job.quoted_cost) }}</td>
+                <td>{{ (now.date() - job.date_in).days }} days</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- In the summary section, update the variables -->
+<div style="margin-top: 30px;">
+    <strong>Summary:</strong>
+    <ul>
+        <li>Total Active Jobs: {{ jobs|length }}</li>
+        <li>Total Quoted Value: R {{ "{:,.2f}".format(total_quoted) }}</li>
+        <li>Average Days in Shop: {{ average_days }} days</li>
+    </ul>
+</div>
+
+    <div class="footer">
+        <strong>THE CAR BUDDIES GaragePro</strong><br>
+        Professional Garage Management System<br>
+        Report generated automatically
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

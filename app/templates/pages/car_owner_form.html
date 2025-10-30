@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+        <a href="{{ url_for('main.car_owners') }}" class="btn btn-warning">
+            ↩️ Back to Owners
+        </a>
+    </div>
+
+    <div style="padding: 2rem;">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">👤 Full Name *</label>
+                    {{ form.name(class="form-control", placeholder="Enter owner's full name") }}
+                    {% for error in form.name.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📞 Phone Number *</label>
+                    {{ form.phone(class="form-control", placeholder="0781234567") }}
+                    {% for error in form.phone.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">✉️ Email Address</label>
+                {{ form.email(class="form-control", placeholder="owner@example.com") }}
+                {% for error in form.email.errors %}
+                <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">📍 Physical Address</label>
+                {{ form.address(class="form-control", placeholder="Enter full physical address", rows="3") }}
+                {% for error in form.address.errors %}
+                <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-success">
+                    💾 Save Owner
+                </button>
+                <a href="{{ url_for('main.car_owners') }}" class="btn btn-warning">
+                    ❌ Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">💡 Tips</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <div>
+                <strong>✅ Required Fields</strong>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                    Name and phone number are required to create a car owner profile.
+                </div>
+            </div>
+            <div>
+                <strong>📧 Email Benefits</strong>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                    Adding email enables automated quotation and receipt delivery.
+                </div>
+            </div>
+            <div>
+                <strong>🚗 Next Steps</strong>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                    After saving, you can add cars belonging to this owner.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

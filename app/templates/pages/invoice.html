@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - THE CAR BUDDIES</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            color: #333;
+            font-size: 12px;
+        }
+        .header { 
+            text-align: center; 
+            border-bottom: 2px solid #28a745; 
+            padding-bottom: 15px; 
+            margin-bottom: 20px;
+        }
+        .logo { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #28a745; 
+            margin-bottom: 8px;
+        }
+        .contact-info { 
+            font-size: 10px; 
+            color: #666; 
+            line-height: 1.3;
+        }
+        .section { 
+            margin-bottom: 20px;
+        }
+        .section-title { 
+            font-weight: bold; 
+            color: #28a745; 
+            margin-bottom: 8px; 
+            border-bottom: 1px solid #ddd; 
+            padding-bottom: 4px;
+            font-size: 13px;
+        }
+        .customer-info, .vehicle-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            margin-bottom: 4px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 11px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+        .payment-info {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 10px;
+            border-left: 3px solid #28a745;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 12px;
+        }
+        .invoice-number {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .completed-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .due-date {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚗 THE CAR BUDDIES</div>
+        <div class="contact-info">
+            661 Baobab Road, Harare<br>
+            Phone: 0789292789 / 0772576803<br>
+            Email: happytayengwa702@gmail.com
+        </div>
+        <div class="invoice-number">
+            INVOICE #I{{ job.id }}{{ job.date_out.strftime('%Y%m%d') }}
+        </div>
+        <h1 style="margin: 8px 0; font-size: 18px;">TAX INVOICE</h1>
+        <div style="font-size: 11px;">
+            Invoice Date: {{ job.date_out.strftime('%d %B %Y') }} 
+            <span class="completed-badge">SERVICE COMPLETED</span>
+        </div>
+    </div>
+
+    <div class="customer-info">
+        <div>
+            <div class="section-title">Bill To</div>
+            <div class="info-item"><span class="info-label">Name:</span> {{ job.car.owner.name }}</div>
+            <div class="info-item"><span class="info-label">Phone:</span> {{ job.car.owner.phone }}</div>
+            {% if job.car.owner.email %}
+            <div class="info-item"><span class="info-label">Email:</span> {{ job.car.owner.email }}</div>
+            {% endif %}
+            {% if job.car.owner.address %}
+            <div class="info-item"><span class="info-label">Address:</span> {{ job.car.owner.address }}</div>
+            {% endif %}
+        </div>
+        <div>
+            <div class="section-title">Vehicle Details</div>
+            <div class="info-item"><span class="info-label">License Plate:</span> {{ job.car.license_plate }}</div>
+            <div class="info-item"><span class="info-label">Make & Model:</span> {{ job.car.make }} {{ job.car.model }}</div>
+            <div class="info-item"><span class="info-label">Year:</span> {{ job.car.year or 'N/A' }}</div>
+            <div class="info-item"><span class="info-label">Service Period:</span> 
+                {{ job.date_in.strftime('%d/%m/%Y') }} - {{ job.date_out.strftime('%d/%m/%Y') }}
+            </div>
+            <div class="info-item"><span class="info-label">Mileage:</span> 
+                {{ "{:,}".format(job.mileage_in) }} km → {{ "{:,}".format(job.mileage_out) }} km
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Services Rendered</div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="70%">Description</th>
+                    <th width="30%">Cost (R)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in job.service_items %}
+                {% if item.is_fixed %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td style="text-align: right;">{{ "{:,.2f}".format(item.cost) }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td style="text-align: right;"><strong>SUB TOTAL:</strong></td>
+                    <td style="text-align: right;"><strong>R {{ "{:,.2f}".format(job.total_cost) }}</strong></td>
+                </tr>
+                <tr class="total-row">
+                    <td style="text-align: right;"><strong>VAT (14%):</strong></td>
+                    <td style="text-align: right;"><strong>R {{ "{:,.2f}".format(job.total_cost * 0.14) }}</strong></td>
+                </tr>
+                <tr class="total-row">
+                    <td style="text-align: right;"><strong>TOTAL AMOUNT DUE:</strong></td>
+                    <td style="text-align: right; font-size: 13px;">
+                        <strong>R {{ "{:,.2f}".format(job.total_cost * 1.14) }}</strong>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if job.notes %}
+    <div class="section">
+        <div class="section-title">Service Notes</div>
+        <div style="padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 11px;">
+            {{ job.notes }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="payment-info">
+        <strong>Payment Information & Terms:</strong><br>
+        • <strong>Total Due:</strong> R {{ "{:,.2f}".format(job.total_cost * 1.14) }}<br>
+        • <strong>Payment Due:</strong> <span class="due-date">Upon Receipt</span><br>
+        • <strong>Payment Methods:</strong> Cash, Bank Transfer, Mobile Money<br>
+        • <strong>Bank Details:</strong><br>
+          &nbsp;&nbsp;Bank: [YOUR BANK NAME]<br>
+          &nbsp;&nbsp;Account: [ACCOUNT NUMBER]<br>
+          &nbsp;&nbsp;Branch: [BRANCH CODE]<br>
+          &nbsp;&nbsp;Reference: Invoice #I{{ job.id }}{{ job.date_out.strftime('%Y%m%d') }}<br>
+        • Late payments may incur interest charges of 2% per month<br>
+        • Receipt will be issued upon payment
+    </div>
+
+    <div class="footer">
+        <strong>THE CAR BUDDIES - Professional Automotive Services</strong><br>
+        661 Baobab Road, Harare | 0789292789 / 0772576803 | happytayengwa702@gmail.com<br>
+        VAT Registration: [VAT NUMBER] | Business Registration: [REG NUMBER]<br>
+        <em>Thank you for your business! We appreciate your trust in our services.</em><br>
+        <span style="color: #28a745;">Generated by GaragePro Management System</span>
+    </div>
+
+    <!-- Page break for printing -->
+    <div style="page-break-after: always;"></div>
+
+    <!-- Optional: Second page with warranty information -->
+    <div class="section">
+        <div class="section-title">Warranty & Service Information</div>
+        
+        <div style="margin-bottom: 15px;">
+            <strong>🔧 Service Summary:</strong>
+            <ul style="font-size: 10px; line-height: 1.4;">
+                <li>All services completed by certified technicians</li>
+                <li>Quality checks performed on all work</li>
+                <li>Vehicle test drive completed after repairs</li>
+                <li>All replaced parts returned to customer upon request</li>
+            </ul>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong>🛡️ Warranty Coverage (90 Days):</strong>
+            <ul style="font-size: 10px; line-height: 1.4;">
+                <li><strong>Parts Warranty:</strong> 90 days from invoice date</li>
+                <li><strong>Labor Warranty:</strong> 90 days from invoice date</li>
+                <li>Coverage includes defects in materials and workmanship</li>
+                <li>Warranty void if vehicle is serviced elsewhere</li>
+                <li>Normal wear and tear excluded</li>
+            </ul>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong>📞 After-Service Support:</strong>
+            <ul style="font-size: 10px; line-height: 1.4;">
+                <li>Free follow-up inspection within 7 days</li>
+                <li>Technical support available during business hours</li>
+                <li>Emergency contact: 0789292789</li>
+                <li>Please keep this invoice for warranty claims</li>
+            </ul>
+        </div>
+
+        <div>
+            <strong>✅ Customer Satisfaction:</strong>
+            <div style="border: 1px solid #ddd; padding: 10px; margin-top: 8px; border-radius: 4px; background: #f8f9fa;">
+                <p style="font-size: 10px; margin: 0; text-align: center;">
+                    We strive for 100% customer satisfaction. If you have any concerns about our service, 
+                    please contact us immediately. Your feedback helps us improve our services.
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <div style="display: inline-block; width: 45%;">
+                <div style="border-top: 1px solid #000; padding-top: 4px; font-size: 10px;">
+                    Authorized Signature<br>
+                    THE CAR BUDDIES
+                </div>
+            </div>
+            <div style="display: inline-block; width: 45%; margin-left: 8%;">
+                <div style="border-top: 1px solid #000; padding-top: 4px; font-size: 10px;">
+                    Date<br>
+                    {{ job.date_out.strftime('%d/%m/%Y') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

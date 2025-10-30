@@ -1,0 +1,89 @@
+<!-- Navigation Sidebar -->
+<nav class="sidebar">
+    <div class="sidebar-brand">
+        <h2>🚗 GARAGEPRO</h2>
+        <small class="text-muted">THE CAR BUDDIES</small>
+    </div>
+    
+    <ul class="sidebar-nav">
+        <li>
+            <a href="{{ url_for('main.dashboard') }}" class="{{ 'active' if request.endpoint == 'main.dashboard' }}">
+                <span class="nav-emoji">🏠</span>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        
+        <li>
+            <a href="{{ url_for('main.car_owners') }}" class="{{ 'active' if request.endpoint == 'main.car_owners' }}">
+                <span class="nav-emoji">👤</span>
+                <span>Car Owners</span>
+            </a>
+        </li>
+        
+        <li>
+            <a href="{{ url_for('main.cars') }}" class="{{ 'active' if request.endpoint in ['main.cars', 'main.add_car'] }}">
+                <span class="nav-emoji">🚗</span>
+                <span>Cars</span>
+            </a>
+        </li>
+        
+        <li>
+            <a href="{{ url_for('main.jobs') }}" class="{{ 'active' if request.endpoint in ['main.jobs', 'main.add_job', 'main.job_detail'] }}">
+                <span class="nav-emoji">📋</span>
+                <span>Jobs & Quotes</span>
+            </a>
+        </li>
+        
+        <li>
+            <a href="{{ url_for('main.payments') }}" class="{{ 'active' if request.endpoint == 'main.payments' }}">
+                <span class="nav-emoji">💵</span>
+                <span>Payments</span>
+            </a>
+        </li>
+        
+        <li>
+            <a href="{{ url_for('main.search') }}" class="{{ 'active' if request.endpoint == 'main.search' }}">
+                <span class="nav-emoji">🔍</span>
+                <span>Search & Reports</span>
+            </a>
+        </li>
+        
+        <li class="sidebar-divider"></li>
+        
+        <li>
+            <a href="{{ url_for('main.profile') }}" class="{{ 'active' if request.endpoint == 'main.profile' }}">
+                <span class="nav-emoji">⚙️</span>
+                <span>Profile & Settings</span>
+            </a>
+        </li>
+        
+        <li>
+            <a href="{{ url_for('main.logout') }}" class="text-danger">
+                <span class="nav-emoji">🚪</span>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+    
+    <!-- Current User Info -->
+    <div class="sidebar-user">
+        <div class="text-center">
+            <div class="text-primary" style="font-weight: bold;">{{ current_user.username }}</div>
+            <small class="text-muted">Garage Owner</small>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .sidebar-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 1rem 0;
+    }
+    
+    .sidebar-user {
+        padding: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: auto;
+    }
+</style>

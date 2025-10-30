@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="dashboard-welcome">
+    <h1>🚗 Welcome to GaragePro, {{ current_user.username }}!</h1>
+    <p>Your complete garage management solution for THE CAR BUDDIES</p>
+</div>
+
+<!-- Quick Stats -->
+<div class="stats-grid">
+    <div class="stat-card card">
+        <div class="stat-icon">🚗</div>
+        <div class="stat-number">{{ total_cars }}</div>
+        <div class="stat-label">Total Cars</div>
+    </div>
+    
+    <div class="stat-card card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-number">{{ total_owners }}</div>
+        <div class="stat-label">Car Owners</div>
+    </div>
+    
+    <div class="stat-card card">
+        <div class="stat-icon">🔧</div>
+        <div class="stat-number">{{ active_jobs }}</div>
+        <div class="stat-label">Active Jobs</div>
+    </div>
+    
+    <div class="stat-card card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-number">R {{ "{:,.2f}".format(monthly_revenue) }}</div>
+        <div class="stat-label">This Month</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <!-- Left Column -->
+    <div>
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📊 Recent Activity</h3>
+                <a href="{{ url_for('main.jobs') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="activity-timeline">
+                {% for job in recent_jobs %}
+                <div class="timeline-item">
+                    <div class="timeline-icon">🔧</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">
+                            {{ job.car.license_plate }} - {{ job.car.make }} {{ job.car.model }}
+                        </div>
+                        <div class="timeline-description">
+                            {{ job.service_items|length }} services • 
+                            <span class="{% if job.status == 'completed' %}text-success{% else %}text-warning{% endif %}">
+                                {{ job.status|replace('_', ' ')|title }}
+                            </span>
+                        </div>
+                        <div class="timeline-time">
+                            Checked in: {{ job.date_in.strftime('%d %b %Y') }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if recent_jobs|length == 0 %}
+                <div class="text-center text-muted" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <p>No recent activity</p>
+                    <a href="{{ url_for('main.add_job') }}" class="btn btn-primary">➕ Create First Job</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">⚡ Quick Actions</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1rem;">
+                <a href="{{ url_for('main.add_job') }}" class="btn btn-success" style="flex-direction: column; padding: 1rem;">
+                    <div style="font-size: 1.5rem;">🔧</div>
+                    <div>New Job</div>
+                </a>
+                
+                <a href="{{ url_for('main.add_car_owner') }}" class="btn btn-warning" style="flex-direction: column; padding: 1rem;">
+                    <div style="font-size: 1.5rem;">👤</div>
+                    <div>New Owner</div>
+                </a>
+                
+                <a href="{{ url_for('main.add_car') }}" class="btn btn-primary" style="flex-direction: column; padding: 1rem;">
+                    <div style="font-size: 1.5rem;">🚗</div>
+                    <div>New Car</div>
+                </a>
+                
+                <a href="{{ url_for('main.payments') }}" class="btn btn-info" style="flex-direction: column; padding: 1rem;">
+                    <div style="font-size: 1.5rem;">💵</div>
+                    <div>Payments</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+        <!-- Recent Payments -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">💵 Recent Payments</h3>
+                <a href="{{ url_for('main.payments') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div>
+                {% for transaction in recent_transactions %}
+                <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: between; align-items: center;">
+                        <div>
+                            <strong>{{ transaction.owner.name }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--gray);">
+                                {{ transaction.description }}
+                            </div>
+                        </div>
+                        <div class="text-success" style="font-weight: bold;">
+                            R {{ "{:,.2f}".format(transaction.amount) }}
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--gray); margin-top: 0.25rem;">
+                        {{ transaction.date.strftime('%d %b %Y') }}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if recent_transactions|length == 0 %}
+                <div class="text-center text-muted" style="padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+                    <p>No recent payments</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🟢 System Status</h3>
+            </div>
+            <div style="padding: 1rem;">
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Database</span>
+                    <span class="text-success">✅ Connected</span>
+                </div>
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>Email Service</span>
+                    <span class="text-success">✅ Ready</span>
+                </div>
+                <div style="display: flex; justify-content: between; margin-bottom: 0.75rem;">
+                    <span>PDF Generation</span>
+                    <span class="text-success">✅ Ready</span>
+                </div>
+                <div style="display: flex; justify-content: between;">
+                    <span>Last Backup</span>
+                    <span class="text-info">{{ now.strftime('%d %b %Y') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+    <div class="chart-container">
+        <h3 class="chart-title">📈 Revenue Trend</h3>
+        <canvas id="revenueChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h3 class="chart-title">🔧 Service Distribution</h3>
+        <canvas id="serviceDistributionChart"></canvas>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard charts
+        if (typeof GarageCharts !== 'undefined') {
+            GarageCharts.initRevenueChart();
+            GarageCharts.initServiceDistributionChart();
+        }
+        
+        // Auto-refresh stats every 30 seconds
+        setInterval(function() {
+            fetch('/api/dashboard_stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-cars').textContent = data.total_cars;
+                    document.getElementById('active-jobs').textContent = data.active_jobs;
+                    document.getElementById('total-revenue').textContent = 'R ' + data.total_revenue.toLocaleString('en-ZA');
+                    document.getElementById('total-outstanding').textContent = 'R ' + data.total_outstanding.toLocaleString('en-ZA');
+                });
+        }, 30000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Payments - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">💵 Payments Management</h3>
+    </div>
+
+    <!-- Add Payment Form -->
+    <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h4 style="color: var(--primary); margin-bottom: 1rem;">➕ Record New Payment</h4>
+        <form method="POST" action="{{ url_for('main.add_payment') }}">
+            {{ form.hidden_tag() }}
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label class="form-label">👤 Customer *</label>
+                    {{ form.owner_id(class="form-select") }}
+                    {% for error in form.owner_id.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label class="form-label">💰 Amount (R) *</label>
+                    {{ form.amount(class="form-control", placeholder="0.00") }}
+                    {% for error in form.amount.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label class="form-label">📅 Date *</label>
+                    {{ form.date(class="form-control", type="date") }}
+                    {% for error in form.date.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-success">💾 Record Payment</button>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <label class="form-label">📝 Description (Optional)</label>
+                {{ form.description(class="form-control", placeholder="Payment description...") }}
+            </div>
+        </form>
+    </div>
+
+    <!-- Payments List -->
+    <div>
+        {% if payments %}
+        <div class="table">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Balance After</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.date.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <strong>{{ payment.owner.name }}</strong>
+                            <br><small class="text-muted">{{ payment.owner.phone }}</small>
+                        </td>
+                        <td>{{ payment.description or 'Payment received' }}</td>
+                        <td>
+                            <span class="text-success" style="font-weight: bold;">
+                                R {{ "{:,.2f}".format(payment.amount) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set balance_after = payment.owner.balance %}
+                            <span class="{% if balance_after > 0 %}balance-negative{% elif balance_after < 0 %}balance-positive{% else %}balance-zero{% endif %}">
+                                R {{ "{:,.2f}".format(balance_after) }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('main.generate_receipt', payment_id=payment.id) }}" class="btn btn-sm btn-primary">
+                                🧾 Receipt
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center" style="padding: 3rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">💰</div>
+            <h3 style="color: var(--gray); margin-bottom: 1rem;">No Payments Recorded</h3>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Record payments from customers to track their account balances.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Outstanding Balances -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📊 Outstanding Balances</h3>
+    </div>
+    <div>
+        {% set owners_with_balance = [] %}
+        {% for owner in all_owners %}
+            {% if owner.balance > 0 %}
+                {% set _ = owners_with_balance.append(owner) %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if owners_with_balance %}
+        <div class="table">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Contact</th>
+                        <th>Outstanding Balance</th>
+                        <th>Last Payment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for owner in owners_with_balance %}
+                    <tr>
+                        <td>
+                            <strong>{{ owner.name }}</strong>
+                            {% if owner.email %}
+                            <br><small class="text-muted">{{ owner.email }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ owner.phone }}</td>
+                        <td>
+                            <span class="balance-negative" style="font-weight: bold;">
+                                R {{ "{:,.2f}".format(owner.balance) }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set last_payment = owner.transactions|selectattr("transaction_type", "equalto", "payment")|sort(attribute="date", reverse=true)|first %}
+                            {% if last_payment %}
+                            {{ last_payment.date.strftime('%d %b %Y') }}
+                            {% else %}
+                            <span class="text-muted">No payments</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="quickPayment({{ owner.id }}, '{{ owner.name }}', {{ owner.balance }})">
+                                💳 Quick Pay
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center" style="padding: 2rem;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">✅</div>
+            <p style="color: var(--gray);">No outstanding balances - all accounts are settled!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function quickPayment(ownerId, ownerName, balance) {
+        const amount = prompt(`Enter payment amount for ${ownerName} (Balance: R ${balance.toLocaleString('en-ZA', {minimumFractionDigits: 2})}):`, balance.toFixed(2));
+        
+        if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url_for("main.add_payment") }}';
+            
+            const ownerInput = document.createElement('input');
+            ownerInput.type = 'hidden';
+            ownerInput.name = 'owner_id';
+            ownerInput.value = ownerId;
+            form.appendChild(ownerInput);
+            
+            const amountInput = document.createElement('input');
+            amountInput.type = 'hidden';
+            amountInput.name = 'amount';
+            amountInput.value = amount;
+            form.appendChild(amountInput);
+            
+            const dateInput = document.createElement('input');
+            dateInput.type = 'hidden';
+            dateInput.name = 'date';
+            dateInput.value = new Date().toISOString().split('T')[0];
+            form.appendChild(dateInput);
+            
+            const descInput = document.createElement('input');
+            descInput.type = 'hidden';
+            descInput.name = 'description';
+            descInput.value = 'Quick payment - ' + ownerName;
+            form.appendChild(descInput);
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = '{{ form.csrf_token._value() }}';
+            form.appendChild(csrfInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+    
+    // Auto-update form when owner is selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const ownerSelect = document.getElementById('owner_id');
+        const amountInput = document.getElementById('amount');
+        
+        if (ownerSelect && amountInput) {
+            ownerSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const balanceText = selectedOption.text.match(/Balance: R ([\d,]+\.\d{2})/);
+                
+                if (balanceText) {
+                    const balance = parseFloat(balanceText[1].replace(/,/g, ''));
+                    amountInput.value = balance.toFixed(2);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

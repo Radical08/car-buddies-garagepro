@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Job #{{ job.id }} - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🔧 Service Job #{{ job.id }}</h3>
+        <div style="display: flex; gap: 0.5rem;">
+            {% if job.status != 'completed' %}
+            <a href="{{ url_for('main.generate_quotation', job_id=job.id) }}" class="btn btn-warning">
+                📄 Download Quote
+            </a>
+            {% if job.car.owner.email %}
+            <form method="POST" action="{{ url_for('main.send_quotation_email_route', job_id=job.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-info">
+                    📧 Email Quote
+                </button>
+            </form>
+            {% endif %}
+            {% else %}
+            <a href="{{ url_for('main.generate_invoice', job_id=job.id) }}" class="btn btn-success">
+                🧾 Download Invoice
+            </a>
+            {% if job.car.owner.email %}
+            <form method="POST" action="{{ url_for('main.send_invoice_email_route', job_id=job.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-info">
+                    📧 Email Invoice
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+            <a href="{{ url_for('main.jobs') }}" class="btn btn-primary">
+                ↩️ Back to Jobs
+            </a>
+        </div>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- Job Overview -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">🚗 Vehicle Information</h4>
+                <div style="background: var(--dark); padding: 1rem; border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <strong>License Plate:</strong>
+                            <div>{{ job.car.license_plate }}</div>
+                        </div>
+                        <div>
+                            <strong>Make & Model:</strong>
+                            <div>{{ job.car.make }} {{ job.car.model }}</div>
+                        </div>
+                        <div>
+                            <strong>Year & Color:</strong>
+                            <div>{{ job.car.year or 'N/A' }} • {{ job.car.color or 'N/A' }}</div>
+                        </div>
+                        <div>
+                            <strong>VIN:</strong>
+                            <div>{{ job.car.vin or 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">👤 Owner Information</h4>
+                <div style="background: var(--dark); padding: 1rem; border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <strong>Name:</strong>
+                            <div>{{ job.car.owner.name }}</div>
+                        </div>
+                        <div>
+                            <strong>Phone:</strong>
+                            <div>{{ job.car.owner.phone }}</div>
+                        </div>
+                        <div>
+                            <strong>Email:</strong>
+                            <div>{{ job.car.owner.email or 'N/A' }}</div>
+                        </div>
+                        <div>
+                            <strong>Balance:</strong>
+                            <div class="{% if job.car.owner.balance > 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                                R {{ "{:,.2f}".format(job.car.owner.balance) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Job Details -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 2rem;">📅</div>
+                <div style="font-weight: bold;">Date In</div>
+                <div>{{ job.date_in.strftime('%d %b %Y') }}</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 2rem;">🛣️</div>
+                <div style="font-weight: bold;">Mileage In</div>
+                <div>{{ "{:,}".format(job.mileage_in) }} km</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 2rem;">💰</div>
+                <div style="font-weight: bold;">Total Cost</div>
+                <div>R {{ "{:,.2f}".format(job.total_cost) }}</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 2rem;">
+                    {% if job.status == 'completed' %}✅{% else %}🟡{% endif %}
+                </div>
+                <div style="font-weight: bold;">Status</div>
+                <div>{{ job.status|replace('_', ' ')|title }}</div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        {% if job.notes %}
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--primary); margin-bottom: 0.5rem;">📝 Job Notes</h4>
+            <div style="background: var(--dark); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--info);">
+                {{ job.notes }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Services Section -->
+        <div>
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">🔧 Services & Repairs</h4>
+            
+            <!-- Add Service Forms -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Quick Service Form -->
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <h5 style="margin-bottom: 1rem;">⚡ Quick Service</h5>
+                    <form method="POST" action="{{ url_for('main.add_quick_service_item', job_id=job.id) }}">
+                        {{ quick_service_form.hidden_tag() }}
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label class="form-label">Service Type</label>
+                                {{ quick_service_form.description(class="form-select") }}
+                            </div>
+                            <div id="custom-service-container" style="display: none;">
+                                <label class="form-label">Custom Description</label>
+                                {{ quick_service_form.custom_description(class="form-control", placeholder="Describe the custom service...") }}
+                            </div>
+                            <div>
+                                <label class="form-label">Cost (R)</label>
+                                {{ quick_service_form.cost(class="form-control", placeholder="0.00") }}
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {{ quick_service_form.is_fixed() }}
+                                    <label class="form-label" style="margin: 0;">Mark as completed</label>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-success">Add Quick Service</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Custom Service Form -->
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <h5 style="margin-bottom: 1rem;">🔧 Custom Service</h5>
+                    <form method="POST" action="{{ url_for('main.add_service_item', job_id=job.id) }}">
+                        {{ service_item_form.hidden_tag() }}
+                        <div style="display: grid; gap: 1rem;">
+                            <div>
+                                <label class="form-label">Service Description</label>
+                                {{ service_item_form.description(class="form-control", placeholder="e.g., Oil Change, Brake Repair") }}
+                            </div>
+                            <div>
+                                <label class="form-label">Cost (R)</label>
+                                {{ service_item_form.cost(class="form-control", placeholder="0.00") }}
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {{ service_item_form.is_fixed() }}
+                                    <label class="form-label" style="margin: 0;">Mark as completed</label>
+                                </div>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Add Custom Service</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Services List -->
+            {% if job.service_items %}
+            <div>
+                {% for item in job.service_items %}
+                <div class="service-item {% if item.is_fixed %}fixed{% else %}pending{% endif %}" data-service="{{ item.id }}">
+                    <div class="service-item-header">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="service-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-service-id="{{ item.id }}" {% if item.is_fixed %}checked{% endif %}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span>{% if item.is_fixed %}✅ Fixed{% else %}⏳ Pending{% endif %}</span>
+                            </div>
+                            <strong>{{ item.description }}</strong>
+                        </div>
+                        <div class="service-cost">R {{ "{:,.2f}".format(item.cost) }}</div>
+                    </div>
+                    <div style="display: flex; justify-content: between; align-items: center; margin-top: 0.5rem;">
+                        <small class="text-muted">Added: {{ item.created_at.strftime('%d %b %Y %H:%M') }}</small>
+                        <button class="btn btn-sm btn-danger" onclick="deleteService({{ item.id }})">🗑️ Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Total -->
+                <div style="text-align: right; margin-top: 1.5rem; padding-top: 1rem; border-top: 2px solid var(--primary);">
+                    <div style="font-size: 1.2rem; font-weight: bold;">
+                        Total Cost: R {{ "{:,.2f}".format(job.total_cost) }}
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.9rem;">
+                        Quoted Amount: R {{ "{:,.2f}".format(job.quoted_cost) }}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center" style="padding: 2rem; background: var(--dark); border-radius: 8px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🔧</div>
+                <p style="color: var(--gray);">No services added yet. Start by adding services above.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        {% if job.status != 'completed' %}
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">🎯 Complete Job</h4>
+            <form method="POST" action="{{ url_for('main.complete_job', job_id=job.id) }}">
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                    <div>
+                        <label class="form-label">Mileage Out (km)</label>
+                        <input type="number" name="mileage_out" class="form-control" value="{{ job.mileage_in }}" min="{{ job.mileage_in }}" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Date Out</label>
+                        <input type="date" name="date_out" class="form-control" value="{{ now.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-success">✅ Complete Job</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--success); color: white; border-radius: 8px; text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+            <h4>Job Completed</h4>
+            <p>This job was completed on {{ job.date_out.strftime('%d %b %Y') }} with mileage out: {{ "{:,}".format(job.mileage_out) }} km</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function deleteService(serviceId) {
+        if (confirm('Are you sure you want to delete this service item?')) {
+            fetch(`/jobs/service/${serviceId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Service item deleted successfully!', 'success');
+                    // Remove the service item from UI
+                    const serviceElement = document.querySelector(`[data-service="${serviceId}"]`);
+                    if (serviceElement) {
+                        serviceElement.remove();
+                    }
+                    // Reload to update totals
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert('Failed to delete service item', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Failed to delete service item', 'error');
+            });
+        }
+    }
+
+    // Show/hide custom service description based on selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const serviceTypeSelect = document.getElementById('description');
+        const customContainer = document.getElementById('custom-service-container');
+        
+        if (serviceTypeSelect && customContainer) {
+            serviceTypeSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customContainer.style.display = 'block';
+                } else {
+                    customContainer.style.display = 'none';
+                }
+            });
+            
+            // Trigger change on load
+            serviceTypeSelect.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+{% endblock %}

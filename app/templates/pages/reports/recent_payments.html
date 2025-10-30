@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+    <meta charset="UTF-8">
+    <title>Recent Payments Report - THE CAR BUDDIES</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #28a745; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #28a745; margin-bottom: 10px; }
+        .report-title { font-size: 20px; font-weight: bold; margin: 20px 0; }
+        .period { text-align: center; color: #666; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: bold; }
+        .positive { color: #28a745; font-weight: bold; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🚗 THE CAR BUDDIES</div>
+        <div>661 Baobab Road | 0789292789 / 0772576803</div>
+        <h1>Recent Payments Report</h1>
+        <div>Generated on: {{ now.strftime('%d %B %Y at %H:%M') }}</div>
+    </div>
+
+    <div class="period">
+        Reporting Period: Last 30 Days ({{ (now - timedelta(days=30)).strftime('%d %b %Y') }} to {{ now.strftime('%d %b %Y') }})
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Balance After</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.date.strftime('%d %b %Y') }}</td>
+                <td>{{ payment.owner.name }}</td>
+                <td>{{ payment.description or 'Payment received' }}</td>
+                <td class="positive">R {{ "{:,.2f}".format(payment.amount) }}</td>
+                <td>R {{ "{:,.2f}".format(payment.owner.balance) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" style="text-align: right; font-weight: bold;">Total Received:</td>
+                <td class="positive" style="font-weight: bold;">R {{ "{:,.2f}".format(total_received) }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="footer">
+        <strong>THE CAR BUDDIES GaragePro</strong><br>
+        Professional Garage Management System<br>
+        Report generated automatically
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

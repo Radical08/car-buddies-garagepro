@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+        <a href="{{ url_for('main.cars') }}" class="btn btn-warning">
+            ↩️ Back to Cars
+        </a>
+    </div>
+
+    <div style="padding: 2rem;">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">🚗 License Plate *</label>
+                    {{ form.license_plate(class="form-control", placeholder="ABC123") }}
+                    {% for error in form.license_plate.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">👤 Owner *</label>
+                    {{ form.owner_id(class="form-select") }}
+                    {% for error in form.owner_id.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">🏭 Make *</label>
+                    {{ form.make(class="form-control", placeholder="Toyota") }}
+                    {% for error in form.make.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🎯 Model *</label>
+                    {{ form.model(class="form-control", placeholder="Corolla") }}
+                    {% for error in form.model.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📅 Year</label>
+                    {{ form.year(class="form-control", placeholder="2020") }}
+                    {% for error in form.year.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">🎨 Color</label>
+                    {{ form.color(class="form-control", placeholder="White") }}
+                    {% for error in form.color.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">🔢 VIN Number</label>
+                    {{ form.vin(class="form-control", placeholder="Vehicle Identification Number") }}
+                    {% for error in form.vin.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-success">
+                    💾 Save Car
+                </button>
+                <a href="{{ url_for('main.cars') }}" class="btn btn-warning">
+                    ❌ Cancel
+                </a>
+                {% if form.owner_id.data %}
+                <a href="{{ url_for('main.add_job') }}?car_id={{ form.car_id.data if form.car_id.data else 'new' }}" class="btn btn-primary">
+                    🔧 Create Job
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">💡 Vehicle Information</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <div>
+                <strong>🚗 License Plate</strong>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                    Unique identifier for the vehicle. This is required and must be unique.
+                </div>
+            </div>
+            <div>
+                <strong>🔢 VIN Number</strong>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                    17-character Vehicle Identification Number for precise identification.
+                </div>
+            </div>
+            <div>
+                <strong>🔧 Service Ready</strong>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                    After adding the car, you can immediately create service jobs and quotations.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-format license plate to uppercase
+        const licensePlateInput = document.getElementById('license_plate');
+        if (licensePlateInput) {
+            licensePlateInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        }
+        
+        // Auto-format VIN to uppercase
+        const vinInput = document.getElementById('vin');
+        if (vinInput) {
+            vinInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        }
+
+        // Pre-select owner if provided in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const ownerId = urlParams.get('owner_id');
+        if (ownerId) {
+            const ownerSelect = document.getElementById('owner_id');
+            if (ownerSelect) {
+                ownerSelect.value = ownerId;
+            }
+        }
+    });
+</script>
+{% endblock %}

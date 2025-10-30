@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}{{ car.license_plate }} - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🚗 Vehicle Details: {{ car.license_plate }}</h3>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ url_for('main.add_job') }}?car_id={{ car.id }}" class="btn btn-success">
+                🔧 New Job
+            </a>
+            <a href="{{ url_for('main.cars') }}" class="btn btn-warning">
+                ↩️ Back to Cars
+            </a>
+        </div>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- Vehicle & Owner Information -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">🚗 Vehicle Information</h4>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <strong>License Plate:</strong>
+                            <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">
+                                {{ car.license_plate }}
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <strong>Make:</strong>
+                                <div>{{ car.make }}</div>
+                            </div>
+                            <div>
+                                <strong>Model:</strong>
+                                <div>{{ car.model }}</div>
+                            </div>
+                            <div>
+                                <strong>Year:</strong>
+                                <div>{{ car.year or 'N/A' }}</div>
+                            </div>
+                            <div>
+                                <strong>Color:</strong>
+                                <div>{{ car.color or 'N/A' }}</div>
+                            </div>
+                        </div>
+                        {% if car.vin %}
+                        <div>
+                            <strong>VIN:</strong>
+                            <div style="font-family: monospace;">{{ car.vin }}</div>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <strong>Registered:</strong>
+                            <div>{{ car.created_at.strftime('%d %b %Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">👤 Owner Information</h4>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <strong>Name:</strong>
+                            <div>{{ car.owner.name }}</div>
+                        </div>
+                        <div>
+                            <strong>Phone:</strong>
+                            <div>{{ car.owner.phone }}</div>
+                        </div>
+                        {% if car.owner.email %}
+                        <div>
+                            <strong>Email:</strong>
+                            <div><a href="mailto:{{ car.owner.email }}">{{ car.owner.email }}</a></div>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <strong>Account Balance:</strong>
+                            <div class="{% if car.owner.balance > 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                                R {{ "{:,.2f}".format(car.owner.balance) }}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <a href="{{ url_for('main.car_owner_detail', owner_id=car.owner.id) }}" class="btn btn-sm btn-primary">
+                                View Owner
+                            </a>
+                            <a href="{{ url_for('main.payments') }}?owner_id={{ car.owner.id }}" class="btn btn-sm btn-success">
+                                💳 Payment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service History -->
+        <div>
+            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="color: var(--primary); margin: 0;">
+                    📋 Service History ({{ car.service_jobs|length }} jobs)
+                </h4>
+                <a href="{{ url_for('main.add_job') }}?car_id={{ car.id }}" class="btn btn-success btn-sm">
+                    ➕ New Job
+                </a>
+            </div>
+            
+            {% if car.service_jobs %}
+            <div style="display: grid; gap: 1rem;">
+                {% for job in car.service_jobs|sort(attribute='date_in', reverse=true) %}
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; border-left: 4px solid {% if job.status == 'completed' %}var(--success){% else %}var(--warning){% endif %};">
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <h5 style="margin: 0 0 0.5rem 0;">
+                                Job #{{ job.id }} - {{ job.date_in.strftime('%d %b %Y') }}
+                            </h5>
+                            <div style="display: flex; gap: 1rem; font-size: 0.9rem; color: var(--gray);">
+                                <div>Mileage: {{ "{:,}".format(job.mileage_in) }} km</div>
+                                {% if job.mileage_out %}
+                                <div>→ {{ "{:,}".format(job.mileage_out) }} km</div>
+                                {% endif %}
+                                <div>•</div>
+                                <div>{{ job.service_items|length }} services</div>
+                                <div>•</div>
+                                <div class="{% if job.status == 'completed' %}text-success{% else %}text-warning{% endif %}">
+                                    {{ job.status|replace('_', ' ')|title }}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">
+                                R {{ "{:,.2f}".format(job.total_cost) }}
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--gray);">
+                                Quoted: R {{ "{:,.2f}".format(job.quoted_cost) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Items -->
+                    {% if job.service_items %}
+                    <div style="margin-top: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--gray); margin-bottom: 0.5rem;">Services:</div>
+                        <div style="display: grid; gap: 0.5rem;">
+                            {% for item in job.service_items %}
+                            <div style="display: flex; justify-content: between; align-items: center; padding: 0.5rem; background: var(--darker); border-radius: 4px;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {% if item.is_fixed %}
+                                    <span style="color: var(--success);">✅</span>
+                                    {% else %}
+                                    <span style="color: var(--warning);">⏳</span>
+                                    {% endif %}
+                                    <span>{{ item.description }}</span>
+                                </div>
+                                <div style="font-weight: bold;">R {{ "{:,.2f}".format(item.cost) }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Actions -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <a href="{{ url_for('main.job_detail', job_id=job.id) }}" class="btn btn-sm btn-primary">
+                            👁️ View Details
+                        </a>
+                        {% if job.status == 'completed' %}
+                        <a href="{{ url_for('main.generate_invoice', job_id=job.id) }}" class="btn btn-sm btn-success">
+                            🧾 Invoice
+                        </a>
+                        {% if car.owner.email %}
+                        <form method="POST" action="{{ url_for('main.send_invoice_email_route', job_id=job.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-info">
+                                📧 Email Invoice
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% else %}
+                        <a href="{{ url_for('main.generate_quotation', job_id=job.id) }}" class="btn btn-sm btn-warning">
+                            📄 Quote
+                        </a>
+                        {% if car.owner.email %}
+                        <form method="POST" action="{{ url_for('main.send_quotation_email_route', job_id=job.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-info">
+                                📧 Email Quote
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center" style="padding: 3rem; background: var(--dark); border-radius: 8px;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🔧</div>
+                <h4 style="color: var(--gray); margin-bottom: 1rem;">No Service History</h4>
+                <p style="color: var(--gray); margin-bottom: 2rem;">This vehicle hasn't had any service jobs yet.</p>
+                <a href="{{ url_for('main.add_job') }}?car_id={{ car.id }}" class="btn btn-success btn-lg">
+                    ➕ Create First Job
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Vehicle Statistics -->
+        <div style="margin-top: 2rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">📊 Vehicle Statistics</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; color: var(--primary);">{{ car.service_jobs|length }}</div>
+                    <div style="color: var(--gray);">Total Jobs</div>
+                </div>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; color: var(--success);">{{ completed_jobs }}</div>
+                    <div style="color: var(--gray);">Completed</div>
+                </div>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; color: var(--warning);">{{ active_jobs }}</div>
+                    <div style="color: var(--gray);">In Progress</div>
+                </div>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; color: var(--info);">R {{ "{:,.2f}".format(total_spent) }}</div>
+                    <div style="color: var(--gray);">Total Spent</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calculate statistics
+    const completedJobs = {{ car.service_jobs|selectattr('status', 'equalto', 'completed')|list|length }};
+    const activeJobs = {{ car.service_jobs|selectattr('status', 'equalto', 'in_progress')|list|length }};
+    const totalSpent = {{ car.service_jobs|selectattr('status', 'equalto', 'completed')|map(attribute='total_cost')|sum }};
+</script>
+{% endblock %}

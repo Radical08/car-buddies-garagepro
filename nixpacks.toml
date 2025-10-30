@@ -1,0 +1,14 @@
+[phases.setup]
+cmds = ["pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["echo 'Building Car Buddies GaragePro...'"]
+
+[phases.start]
+cmds = ["python run.py"]
+
+[phases.install]
+cmds = ["pip install --upgrade pip"]
+
+[start]
+cmd = "python run.py"

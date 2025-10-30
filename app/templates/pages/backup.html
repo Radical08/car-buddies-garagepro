@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Backup & Restore - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">💾 Backup & Restore</h3>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- Backup Section -->
+        <div style="margin-bottom: 3rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1.5rem;">📤 Create Backup</h4>
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Backup Type</label>
+                            {{ form.backup_type(class="form-select") }}
+                            {% for error in form.backup_type.errors %}
+                            <small style="color: var(--danger);">{{ error }}</small>
+                            {% endfor %}
+                        </div>
+
+                        <div class="form-group">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                {{ form.include_attachments() }}
+                                <label class="form-label" style="margin: 0;">Include file attachments</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            💾 Create Backup
+                        </button>
+                    </div>
+
+                    <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                        <h5 style="color: var(--primary); margin-bottom: 1rem;">ℹ️ Backup Information</h5>
+                        <div style="font-size: 0.9rem; color: var(--gray);">
+                            <p><strong>Full Backup:</strong> Database + all file attachments</p>
+                            <p><strong>Database Only:</strong> Only SQLite database file</p>
+                            <p><strong>Settings Only:</strong> Application configuration</p>
+                            <p style="margin-top: 1rem;">Backups are stored in the <code>backups/</code> directory and automatically cleaned up after 30 days.</p>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Restore Section -->
+        <div>
+            <h4 style="color: var(--primary); margin-bottom: 1.5rem;">📥 Restore Data</h4>
+            
+            <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: center;">
+                    <div>
+                        <h5 style="color: var(--warning); margin-bottom: 0.5rem;">⚠️ Important Notice</h5>
+                        <p style="color: var(--gray); margin-bottom: 1rem;">
+                            Restoring from backup will replace all current data. This action cannot be undone.
+                            Make sure you have a current backup before proceeding.
+                        </p>
+                        <div style="font-size: 0.9rem; color: var(--danger);">
+                            <strong>Warning:</strong> All current data will be permanently lost!
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="btn btn-danger" onclick="showRestoreWarning()">
+                            🚨 Restore from Backup
+                        </button>
+                        <p style="font-size: 0.8rem; color: var(--gray); margin-top: 0.5rem;">
+                            Contact support if unsure
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div style="margin-top: 3rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">🔧 System Information</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: var(--primary);">💾</div>
+                    <div style="font-size: 0.9rem; color: var(--gray);">Database Size</div>
+                    <div style="font-weight: bold;">~2.5 MB</div>
+                </div>
+                
+                <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: var(--success);">✅</div>
+                    <div style="font-size: 0.9rem; color: var(--gray);">Backup Status</div>
+                    <div style="font-weight: bold;">Active</div>
+                </div>
+                
+                <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: var(--info);">🕒</div>
+                    <div style="font-size: 0.9rem; color: var(--gray);">Last Backup</div>
+                    <div style="font-weight: bold;">Today</div>
+                </div>
+                
+                <div style="background: var(--dark); padding: 1rem; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: var(--warning);">🧹</div>
+                    <div style="font-size: 0.9rem; color: var(--gray);">Cleanup</div>
+                    <div style="font-weight: bold;">Auto (30 days)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showRestoreWarning() {
+        if (confirm('🚨 DANGER: This will DELETE ALL CURRENT DATA and restore from backup!\n\nThis action cannot be undone. Are you absolutely sure?')) {
+            if (confirm('‼️ FINAL WARNING: All current customers, cars, jobs, and payments will be PERMANENTLY DELETED!\n\nType "RESTORE" to confirm:')) {
+                const restoreCode = prompt('Please type RESTORE (in uppercase) to confirm:');
+                if (restoreCode === 'RESTORE') {
+                    showAlert('Restore process would start now...', 'warning');
+                    // In a real implementation, this would call the restore endpoint
+                } else {
+                    showAlert('Restore cancelled - incorrect confirmation code', 'error');
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Loading - Car Buddies GaragePro{% endblock %}
+
+{% block auth_content %}
+<div class="splash-screen">
+    <div class="splash-logo">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem;">🚗 CAR BUDDIES</h1>
+        <p style="font-size: 1.2rem; color: var(--primary);">GaragePro Management System</p>
+        <p style="margin-top: 2rem; color: var(--gray);">Loading your garage management system...</p>
+    </div>
+    <div class="splash-loader"></div>
+    
+    <div style="position: absolute; bottom: 2rem; text-align: center; color: var(--gray);">
+        <div>THE CAR BUDDIES</div>
+        <div style="font-size: 0.8rem; margin-top: 0.5rem;">661 Baobab Road • 0789292789</div>
+    </div>
+</div>
+
+<script>
+    // Force redirect to login after splash
+    setTimeout(function() {
+        window.location.href = "{{ url_for('main.login') }}";
+    }, 3000);
+</script>
+{% endblock %}

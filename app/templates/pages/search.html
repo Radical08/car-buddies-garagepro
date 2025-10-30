@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Search & Reports - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🔍 Search & Reports</h3>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- Search Form -->
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 2rem;">
+                <div>
+                    <label class="form-label">Search Query</label>
+                    {{ form.search_query(class="form-control", placeholder="Enter license plate, owner name, or car details...") }}
+                </div>
+                <div>
+                    <label class="form-label">Search Type</label>
+                    {{ form.search_type(class="form-select") }}
+                </div>
+                <div>
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">🔍 Search</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Search Results -->
+        {% if results is defined %}
+        <div>
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">
+                📊 Search Results 
+                {% if results %}
+                <span class="badge badge-info">{{ results|length }} found</span>
+                {% endif %}
+            </h4>
+
+            {% if results %}
+                {% if form.search_type.data == 'owner_name' or form.search_type.data == 'phone' %}
+                    <!-- Owner Results -->
+                    <div style="display: grid; gap: 1rem;">
+                        {% for owner in results %}
+                        <div class="card" style="background: var(--dark);">
+                            <div style="padding: 1.5rem;">
+                                <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                                    <div>
+                                        <h5 style="color: var(--primary); margin-bottom: 0.5rem;">👤 {{ owner.name }}</h5>
+                                        <div style="display: grid; grid-template-columns: auto auto; gap: 1rem; font-size: 0.9rem;">
+                                            <div>
+                                                <strong>📞 Phone:</strong> {{ owner.phone }}
+                                            </div>
+                                            <div>
+                                                <strong>✉️ Email:</strong> {{ owner.email or 'N/A' }}
+                                            </div>
+                                            <div>
+                                                <strong>📍 Address:</strong> {{ owner.address or 'N/A' }}
+                                            </div>
+                                            <div>
+                                                <strong>💰 Balance:</strong> 
+                                                <span class="{% if owner.balance > 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                                                    R {{ "{:,.2f}".format(owner.balance) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div class="badge badge-info">{{ owner.cars|length }} cars</div>
+                                        <div style="margin-top: 0.5rem;">
+                                            <a href="{{ url_for('main.car_owner_detail', owner_id=owner.id) }}" class="btn btn-sm btn-primary">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Owner's Cars -->
+                                {% if owner.cars %}
+                                <div>
+                                    <h6 style="color: var(--primary); margin-bottom: 0.5rem;">🚗 Vehicles:</h6>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                                        {% for car in owner.cars %}
+                                        <div style="background: var(--darker); padding: 0.75rem; border-radius: 6px;">
+                                            <strong>{{ car.license_plate }}</strong>
+                                            <div style="font-size: 0.8rem; color: var(--gray);">
+                                                {{ car.make }} {{ car.model }} • {{ car.year or 'N/A' }}
+                                            </div>
+                                            <div style="font-size: 0.8rem;">
+                                                <span class="badge badge-info">{{ car.service_jobs|length }} jobs</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+                    <!-- Car Results -->
+                    <div class="table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>License Plate</th>
+                                    <th>Vehicle Details</th>
+                                    <th>Owner</th>
+                                    <th>Service History</th>
+                                    <th>Last Service</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for car in results %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ car.license_plate }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ car.make }} {{ car.model }}</strong>
+                                        {% if car.year %}
+                                        <br><small class="text-muted">{{ car.year }} • {{ car.color }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ car.owner.name }}</strong>
+                                        <br><small class="text-muted">{{ car.owner.phone }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">{{ car.service_jobs|length }} jobs</span>
+                                    </td>
+                                    <td>
+                                        {% if car.service_jobs %}
+                                        {% set last_job = car.service_jobs|sort(attribute='date_in', reverse=true)|first %}
+                                        <small>{{ last_job.date_in.strftime('%d %b %Y') }}</small>
+                                        {% else %}
+                                        <span class="text-muted">No services</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.25rem;">
+                                            <a href="{{ url_for('main.add_job') }}?car_id={{ car.id }}" class="btn btn-sm btn-success" title="New Job">
+                                                🔧
+                                            </a>
+                                            <a href="{{ url_for('main.car_detail', car_id=car.id) }}" class="btn btn-sm btn-primary" title="View History">
+                                                👁️
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            {% elif request.method == 'POST' %}
+            <div class="text-center" style="padding: 3rem; background: var(--dark); border-radius: 8px;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+                <h4 style="color: var(--gray); margin-bottom: 1rem;">No Results Found</h4>
+                <p style="color: var(--gray);">Try adjusting your search criteria or search for something else.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <!-- Quick Search Options -->
+        <div style="text-align: center; padding: 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">Quick Search Options</h4>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Search for cars, owners, or use the quick links below</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div class="card" style="background: var(--dark); cursor: pointer;" onclick="setSearchType('license_plate')">
+                    <div style="padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem;">🚗</div>
+                        <h5>License Plates</h5>
+                        <p style="font-size: 0.9rem; color: var(--gray);">Search by vehicle license plate</p>
+                    </div>
+                </div>
+                
+                <div class="card" style="background: var(--dark); cursor: pointer;" onclick="setSearchType('owner_name')">
+                    <div style="padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem;">👤</div>
+                        <h5>Customer Names</h5>
+                        <p style="font-size: 0.9rem; color: var(--gray);">Search by owner name</p>
+                    </div>
+                </div>
+                
+                <div class="card" style="background: var(--dark); cursor: pointer;" onclick="setSearchType('car_make')">
+                    <div style="padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem;">🏎️</div>
+                        <h5>Car Makes</h5>
+                        <p style="font-size: 0.9rem; color: var(--gray);">Search by vehicle make/model</p>
+                    </div>
+                </div>
+
+                <div class="card" style="background: var(--dark); cursor: pointer;" onclick="setSearchType('phone')">
+                    <div style="padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem;">📞</div>
+                        <h5>Phone Numbers</h5>
+                        <p style="font-size: 0.9rem; color: var(--gray);">Search by customer phone</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Reports Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📈 Quick Reports</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <a href="{{ url_for('main.report_outstanding_balances') }}" class="card" style="background: var(--dark); text-decoration: none; cursor: pointer;">
+                <div style="padding: 1rem; text-align: center;">
+                    <div style="font-size: 2rem;">💰</div>
+                    <h5>Outstanding Balances</h5>
+                    <p style="font-size: 0.9rem; color: var(--gray);">Customers with unpaid balances</p>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('main.report_recent_payments') }}" class="card" style="background: var(--dark); text-decoration: none; cursor: pointer;">
+                <div style="padding: 1rem; text-align: center;">
+                    <div style="font-size: 2rem;">💵</div>
+                    <h5>Recent Payments</h5>
+                    <p style="font-size: 0.9rem; color: var(--gray);">Last 30 days payments</p>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('main.report_active_jobs') }}" class="card" style="background: var(--dark); text-decoration: none; cursor: pointer;">
+                <div style="padding: 1rem; text-align: center;">
+                    <div style="font-size: 2rem;">🔧</div>
+                    <h5>Active Jobs</h5>
+                    <p style="font-size: 0.9rem; color: var(--gray);">Currently in-progress jobs</p>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('main.report_service_history') }}" class="card" style="background: var(--dark); text-decoration: none; cursor: pointer;">
+                <div style="padding: 1rem; text-align: center;">
+                    <div style="font-size: 2rem;">📋</div>
+                    <h5>Service History</h5>
+                    <p style="font-size: 0.9rem; color: var(--gray);">Complete service records</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Export Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📤 Data Export</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <a href="{{ url_for('main.export_data', data_type='customers') }}" class="btn btn-primary" style="display: flex; flex-direction: column; align-items: center; padding: 1rem;">
+                <div style="font-size: 2rem;">👥</div>
+                <div>Export Customers</div>
+                <small style="color: var(--gray);">CSV Format</small>
+            </a>
+            
+            <a href="{{ url_for('main.export_data', data_type='jobs') }}" class="btn btn-success" style="display: flex; flex-direction: column; align-items: center; padding: 1rem;">
+                <div style="font-size: 2rem;">🔧</div>
+                <div>Export Jobs</div>
+                <small style="color: var(--gray);">CSV Format</small>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function setSearchType(type) {
+        document.getElementById('search_type').value = type;
+        document.getElementById('search_query').focus();
+        
+        // Update placeholder based on type
+        const searchInput = document.getElementById('search_query');
+        const placeholders = {
+            'license_plate': 'Enter license plate (e.g., ABC123)...',
+            'owner_name': 'Enter owner name...', 
+            'car_make': 'Enter car make or model...',
+            'phone': 'Enter phone number...'
+        };
+        searchInput.placeholder = placeholders[type] || 'Enter search query...';
+    }
+    
+    // Auto-focus search input on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search_query');
+        if (searchInput) {
+            searchInput.focus();
+        }
+    });
+</script>
+{% endblock %}

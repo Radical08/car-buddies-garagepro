@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">{{ title }}</h3>
+        <a href="{{ url_for('main.jobs') }}" class="btn btn-warning">
+            ↩️ Back to Jobs
+        </a>
+    </div>
+
+    <div style="padding: 2rem;">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">🚗 Select Vehicle *</label>
+                    {{ form.car_id(class="form-select") }}
+                    {% for error in form.car_id.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">📅 Date In *</label>
+                    {{ form.date_in(class="form-control", type="date") }}
+                    {% for error in form.date_in.errors %}
+                    <small style="color: var(--danger);">{{ error }}</small>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🛣️ Mileage In (km) *</label>
+                {{ form.mileage_in(class="form-control", placeholder="Current vehicle mileage") }}
+                {% for error in form.mileage_in.errors %}
+                <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">📝 Notes (Optional)</label>
+                {{ form.notes(class="form-control", placeholder="Any special instructions or observations...", rows="3") }}
+                {% for error in form.notes.errors %}
+                <small style="color: var(--danger);">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-success">
+                    🔧 Create Job
+                </button>
+                <a href="{{ url_for('main.jobs') }}" class="btn btn-warning">
+                    ❌ Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Car Info -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🚗 Vehicle Information</h3>
+    </div>
+    <div id="car-info" style="padding: 1.5rem;">
+        <div class="text-center text-muted">
+            Select a vehicle to see details
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const carSelect = document.getElementById('car_id');
+        const carInfo = document.getElementById('car-info');
+        
+        // Pre-populate car info if car_id is in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const carId = urlParams.get('car_id');
+        if (carId) {
+            carSelect.value = carId;
+            updateCarInfo(carId);
+        }
+        
+        carSelect.addEventListener('change', function() {
+            updateCarInfo(this.value);
+        });
+        
+        function updateCarInfo(carId) {
+            if (!carId) {
+                carInfo.innerHTML = '<div class="text-center text-muted">Select a vehicle to see details</div>';
+                return;
+            }
+            
+            // Show loading state
+            carInfo.innerHTML = '<div class="text-center">Loading vehicle info...</div>';
+            
+            // In a real app, you'd fetch this from an API
+            // For now, we'll extract from the selected option
+            setTimeout(() => {
+                const selectedOption = carSelect.options[carSelect.selectedIndex];
+                const carText = selectedOption.text;
+                const parts = carText.split(' - ');
+                
+                if (parts.length >= 2) {
+                    const licensePlate = parts[0];
+                    const vehicleDetails = parts[1];
+                    
+                    carInfo.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <strong>License Plate:</strong>
+                                <div>${licensePlate}</div>
+                            </div>
+                            <div>
+                                <strong>Vehicle:</strong>
+                                <div>${vehicleDetails}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 1rem; background: var(--dark); border-radius: 8px;">
+                            <small class="text-muted">
+                                💡 This vehicle will be checked in for service. You can add services after creating the job.
+                            </small>
+                        </div>
+                    `;
+                } else {
+                    carInfo.innerHTML = `
+                        <div class="text-center text-muted">
+                            Vehicle information available after selection
+                        </div>
+                    `;
+                }
+            }, 500);
+        }
+    });
+</script>
+{% endblock %}

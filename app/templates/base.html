@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-ZA" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Car Buddies GaragePro{% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Professional Garage Management System for THE CAR BUDDIES">
+    <meta name="theme-color" content="#00d4ff">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/icon-192.png') }}">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-logo">
+            <h1>🚗 CAR BUDDIES</h1>
+            <p>GaragePro Management System</p>
+        </div>
+        <div class="splash-loader"></div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <!-- Main App Layout -->
+    <div class="app-container" style="display: none;">
+        <!-- Sidebar -->
+        {% include 'components/sidebar.html' %}
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            {% include 'components/header.html' %}
+            
+            <!-- Alerts Container -->
+            <div class="alerts-container"></div>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'error' if category == 'danger' else category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Main Content Block -->
+            <main>
+                {% block content %}{% endblock %}
+            </main>
+            
+            <!-- Footer -->
+            {% include 'components/footer.html' %}
+        </div>
+    </div>
+    {% else %}
+    <!-- Login/Landing Page Layout -->
+    <div id="login-container" style="display: none;">
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pwa.js') }}"></script>
+    
+    {% if current_user.is_authenticated %}
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    {% endif %}
+    
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // Hide splash screen after load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('splash-screen').style.display = 'none';
+                
+                {% if current_user.is_authenticated %}
+                document.querySelector('.app-container').style.display = 'flex';
+                {% else %}
+                document.getElementById('login-container').style.display = 'block';
+                {% endif %}
+            }, 2500); // 2.5 seconds splash screen
+        });
+    </script>
+</body>
+</html>

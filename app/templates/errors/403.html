@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 4rem auto; text-align: center;">
+    <div class="card-header">
+        <h1 class="card-title">403 - Access Denied</h1>
+    </div>
+    
+    <div style="padding: 3rem 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 2rem;">🚫</div>
+        
+        <h2 style="color: var(--warning); margin-bottom: 1rem;">Access Forbidden</h2>
+        
+        <p style="color: var(--gray); margin-bottom: 2rem; line-height: 1.6;">
+            You don't have permission to access this page or resource. 
+            Please check your credentials or contact the administrator.
+        </p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                🏠 Go to Dashboard
+            </a>
+            
+            <a href="javascript:history.back()" class="btn btn-warning">
+                ↩️ Go Back
+            </a>
+            
+            <a href="{{ url_for('main.logout') }}" class="btn btn-danger">
+                🔐 Re-login
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <div class="card-header">
+        <h3 class="card-title">🔒 Security Notice</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="background: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--warning);">
+            <strong>Important:</strong>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--gray);">
+                This incident has been logged for security purposes. 
+                If you believe this is an error, please contact the system administrator.
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem;">
+            <strong>Administrator Contact:</strong>
+            <div style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                📞 0789292789<br>
+                ✉️ happytayengwa702@gmail.com
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

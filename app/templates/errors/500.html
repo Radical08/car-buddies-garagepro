@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 4rem auto; text-align: center;">
+    <div class="card-header">
+        <h1 class="card-title">500 - Server Error</h1>
+    </div>
+    
+    <div style="padding: 3rem 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 2rem;">🚨</div>
+        
+        <h2 style="color: var(--danger); margin-bottom: 1rem;">Something Went Wrong</h2>
+        
+        <p style="color: var(--gray); margin-bottom: 2rem; line-height: 1.6;">
+            We're experiencing some technical difficulties on our end. 
+            Our team has been notified and is working to fix the issue.
+        </p>
+        
+        <div style="background: rgba(220, 53, 69, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--danger);">
+            <strong>Technical Details:</strong>
+            <div style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--gray);">
+                Internal Server Error - Please try again in a few moments
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                🏠 Go to Dashboard
+            </a>
+            
+            <button onclick="window.location.reload()" class="btn btn-warning">
+                🔄 Refresh Page
+            </button>
+            
+            <a href="javascript:history.back()" class="btn btn-success">
+                ↩️ Go Back
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <div class="card-header">
+        <h3 class="card-title">🛠️ Troubleshooting Steps</h3>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="text-align: left;">
+            <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
+                <span style="background: var(--primary); color: var(--dark); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0;">1</span>
+                <span>Refresh the page and try again</span>
+            </div>
+            
+            <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
+                <span style="background: var(--primary); color: var(--dark); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0;">2</span>
+                <span>Clear your browser cache and cookies</span>
+            </div>
+            
+            <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
+                <span style="background: var(--primary); color: var(--dark); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0;">3</span>
+                <span>Try using a different browser</span>
+            </div>
+            
+            <div style="display: flex; align-items: flex-start;">
+                <span style="background: var(--primary); color: var(--dark); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0;">4</span>
+                <span>If the problem persists, contact support</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <strong>Contact Support:</strong>
+            <div style="font-size: 0.9rem; color: var(--gray);">
+                📞 0789292789 / 0772576803<br>
+                ✉️ happytayengwa702@gmail.com
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

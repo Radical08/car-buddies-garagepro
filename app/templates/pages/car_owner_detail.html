@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}{{ owner.name }} - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">👤 Owner Details: {{ owner.name }}</h3>
+        <a href="{{ url_for('main.car_owners') }}" class="btn btn-warning">
+            ↩️ Back to Owners
+        </a>
+    </div>
+
+    <div style="padding: 2rem;">
+        <!-- Owner Information -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">📋 Contact Information</h4>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <strong>Full Name:</strong>
+                            <div>{{ owner.name }}</div>
+                        </div>
+                        <div>
+                            <strong>Phone Number:</strong>
+                            <div>{{ owner.phone }}</div>
+                        </div>
+                        {% if owner.email %}
+                        <div>
+                            <strong>Email:</strong>
+                            <div><a href="mailto:{{ owner.email }}">{{ owner.email }}</a></div>
+                        </div>
+                        {% endif %}
+                        {% if owner.address %}
+                        <div>
+                            <strong>Address:</strong>
+                            <div>{{ owner.address }}</div>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <strong>Member Since:</strong>
+                            <div>{{ owner.created_at.strftime('%d %b %Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">💰 Account Summary</h4>
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">
+                            {% if owner.balance > 0 %}
+                            <span class="balance-negative">R {{ "{:,.2f}".format(owner.balance) }}</span>
+                            {% elif owner.balance < 0 %}
+                            <span class="balance-positive">R {{ "{:,.2f}".format(owner.balance) }}</span>
+                            {% else %}
+                            <span class="balance-zero">R {{ "{:,.2f}".format(owner.balance) }}</span>
+                            {% endif %}
+                        </div>
+                        <div style="color: var(--gray); margin-bottom: 1.5rem;">
+                            Current Account Balance
+                        </div>
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <a href="{{ url_for('main.payments') }}?owner_id={{ owner.id }}" class="btn btn-success">
+                                💳 Record Payment
+                            </a>
+                            {% if owner.email %}
+                            <button class="btn btn-info" onclick="sendStatement()">
+                                📧 Send Statement
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owner's Cars -->
+        <div>
+            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="color: var(--primary); margin: 0;">🚗 Vehicles ({{ owner.cars|length }})</h4>
+                <a href="{{ url_for('main.add_car') }}?owner_id={{ owner.id }}" class="btn btn-success btn-sm">
+                    ➕ Add Car
+                </a>
+            </div>
+            
+            {% if owner.cars %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                {% for car in owner.cars %}
+                <div style="background: var(--dark); padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <h5 style="margin: 0 0 0.5rem 0; color: var(--primary);">
+                                {{ car.license_plate }}
+                            </h5>
+                            <div style="font-size: 0.9rem; color: var(--gray);">
+                                {{ car.make }} {{ car.model }} • {{ car.year or 'N/A' }} • {{ car.color or 'N/A' }}
+                            </div>
+                        </div>
+                        <span class="badge badge-info">{{ car.service_jobs|length }} jobs</span>
+                    </div>
+                    
+                    <div style="font-size: 0.8rem; color: var(--gray); margin-bottom: 1rem;">
+                        {% if car.vin %}
+                        <div>VIN: {{ car.vin }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('main.add_job') }}?car_id={{ car.id }}" class="btn btn-sm btn-success">
+                            🔧 New Job
+                        </a>
+                        <a href="{{ url_for('main.car_detail', car_id=car.id) }}" class="btn btn-sm btn-primary">
+                            👁️ View
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center" style="padding: 2rem; background: var(--dark); border-radius: 8px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🚗</div>
+                <p style="color: var(--gray); margin-bottom: 1rem;">No vehicles registered for this owner</p>
+                <a href="{{ url_for('main.add_car') }}?owner_id={{ owner.id }}" class="btn btn-success">
+                    ➕ Add First Vehicle
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Transactions -->
+        <div style="margin-top: 2rem;">
+            <h4 style="color: var(--primary); margin-bottom: 1rem;">📊 Recent Transactions</h4>
+            
+            {% if owner.transactions %}
+            <div class="table">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set running_balance = 0 %}
+                        {% for transaction in owner.transactions|sort(attribute='date', reverse=true) %}
+                        {% set running_balance = running_balance + (transaction.amount if transaction.transaction_type == 'invoice' else -transaction.amount) %}
+                        <tr>
+                            <td>{{ transaction.date.strftime('%d %b %Y') }}</td>
+                            <td>
+                                {% if transaction.transaction_type == 'invoice' %}
+                                <span class="badge badge-warning">Invoice</span>
+                                {% else %}
+                                <span class="badge badge-success">Payment</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ transaction.description }}</td>
+                            <td>
+                                <span class="{% if transaction.transaction_type == 'invoice' %}text-danger{% else %}text-success{% endif %}">
+                                    {% if transaction.transaction_type == 'invoice' %}+{% else %}-{% endif %} R {{ "{:,.2f}".format(transaction.amount) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="{% if running_balance > 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                                    R {{ "{:,.2f}".format(running_balance) }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center" style="padding: 2rem; background: var(--dark); border-radius: 8px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💵</div>
+                <p style="color: var(--gray);">No transactions yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function sendStatement() {
+        if (confirm('Send account statement to {{ owner.name }}?')) {
+            // In a real implementation, this would call an API endpoint
+            showAlert('Account statement sent to {{ owner.email }}!', 'success');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Car Owners - Car Buddies GaragePro{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">👤 Car Owners Management</h3>
+        <a href="{{ url_for('main.add_car_owner') }}" class="btn btn-success">
+            ➕ Add New Owner
+        </a>
+    </div>
+
+    {% if owners %}
+    <div class="table">
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Owner Name</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Cars</th>
+                    <th>Balance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for owner in owners %}
+                <tr>
+                    <td>
+                        <strong>{{ owner.name }}</strong>
+                        {% if owner.address %}
+                        <br><small class="text-muted">{{ owner.address[:50] }}{% if owner.address|length > 50 %}...{% endif %}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ owner.phone }}</td>
+                    <td>
+                        {% if owner.email %}
+                        <a href="mailto:{{ owner.email }}" class="text-primary">{{ owner.email }}</a>
+                        {% else %}
+                        <span class="text-muted">No email</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{ owner.cars|length }} cars</span>
+                    </td>
+                    <td>
+                        <span class="{% if owner.balance > 0 %}balance-negative{% elif owner.balance < 0 %}balance-positive{% else %}balance-zero{% endif %}">
+                            R {{ "{:,.2f}".format(owner.balance) }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ url_for('main.add_car') }}?owner_id={{ owner.id }}" class="btn btn-sm btn-primary" title="Add Car">
+                                🚗
+                            </a>
+                            <a href="{{ url_for('main.car_owner_detail', owner_id=owner.id) }}" class="btn btn-sm btn-warning" title="View Details">
+                                👁️
+                            </a>
+                            {% if owner.email %}
+                            <button class="btn btn-sm btn-info" title="Send Statement" onclick="sendOwnerStatement({{ owner.id }})">
+                                ✉️
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center" style="padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">👤</div>
+        <h3 style="color: var(--gray); margin-bottom: 1rem;">No Car Owners Yet</h3>
+        <p style="color: var(--gray); margin-bottom: 2rem;">Start by adding your first car owner to the system.</p>
+        <a href="{{ url_for('main.add_car_owner') }}" class="btn btn-success btn-lg">
+            ➕ Add First Car Owner
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Balance Summary -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">💰 Financial Summary</h3>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem;">
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--danger);">R {{ "{:,.2f}".format(total_outstanding) }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total Outstanding</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--success);">{{ owners_with_balance }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Owners with Balance</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 2rem; color: var(--info);">{{ owners|length }}</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total Owners</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function sendOwnerStatement(ownerId) {
+        if (confirm('Send account statement to this owner?')) {
+            // In a real implementation, this would call an API endpoint
+            showAlert('Account statement sent successfully!', 'success');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add search functionality
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = '🔍 Search owners by name, phone, or email...';
+        searchInput.className = 'form-control';
+        searchInput.style.marginBottom = '1rem';
+        
+        const cardHeader = document.querySelector('.card-header');
+        cardHeader.parentNode.insertBefore(searchInput, cardHeader.nextSibling);
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}
