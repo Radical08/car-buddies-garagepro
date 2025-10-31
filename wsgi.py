@@ -1,7 +1,10 @@
+import sys
+import os
+
+# Add your app directory to the Python path
+path = os.path.dirname(os.path.abspath(__file__))
+if path not in sys.path:
+    sys.path.append(path)
+
 from app import create_app
-
-app = create_app()
-
-if __name__ == '__main__':
-    from waitress import serve
-    serve(app, host='0.0.0.0', port=5000)
+application = create_app()
